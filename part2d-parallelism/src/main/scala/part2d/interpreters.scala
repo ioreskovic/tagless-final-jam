@@ -8,14 +8,14 @@ import scala.language.higherKinds
 object interpreters {
 
     case class NoSuchUserException(userId: UserId) extends Exception
-    class ReadingListServiceCompiler[F[_]: Throwing](users: UserRepository[F], books: BookRepository[F]) extends ReadingListService[F] {
+    class ReadingListServiceCompiler[F[_]: Throwing : ParallelId](users: UserRepository[F], books: BookRepository[F]) extends ReadingListService[F] {
 
         override def getReadingList(userId: UserId): F[ReadingList] = {
             for {
                 userOpt <- users.getUser(userId)
                 list <- userOpt match {
                     case Some(user: User) =>
-                        user.books.traverse(books.getBook).map { books => ReadingList(user, books.flatten) }
+                        user.books.parTraverse(books.getBook).map { books => ReadingList(user, books.flatten) }
                     case None =>
                         Throwing[F].raiseError(NoSuchUserException(userId))
                 }

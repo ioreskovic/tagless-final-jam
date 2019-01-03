@@ -24,9 +24,13 @@ class InMemoryUserRepository extends UserRepository[Id] {
 }
 
 class InMemoryBookRepository extends BookRepository[Id] {
-    override def listBooks(): Id[List[Book]] = ???
-    override def getBook(id: BookId): Id[Option[Book]] = ???
-    override def addBook(book: Book): Id[Unit] = ???
+    private var books = Map.empty[BookId, Book]
+
+    override def listBooks(): Id[List[Book]] = books.values.toList
+    override def getBook(id: BookId): Id[Option[Book]] = books.get(id)
+    override def addBook(book: Book): Id[Unit] = for {
+        bookId <- book.id
+    } yield books = books + (bookId -> book)
 }
 
 class RepositorySpec extends WordSpec with MustMatchers {
@@ -81,8 +85,13 @@ class RepositorySpec extends WordSpec with MustMatchers {
         }
 
         "added book can be listed" in {
-            // Define this test case
-            ???
+            val repository = new InMemoryBookRepository
+            val listed = for {
+                _ <- repository.addBook(book)
+                listedBooks <- repository.listBooks()
+            } yield listedBooks
+
+            listed.size mustBe 1
         }
     }
 }

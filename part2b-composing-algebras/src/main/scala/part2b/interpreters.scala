@@ -18,7 +18,18 @@ object interpreters {
          *
          *  Tip: Remember that the User object has a list of 'BookId' that are the ids of the books on their reading list.
          */
-        override def getReadingList(userId: UserId): F[ReadingList] = ???
+        override def getReadingList(userId: UserId): F[ReadingList] = {
+            for {
+                maybeUser <- users.getUser(userId)
+                userBooks <- maybeUser match {
+                    case Some(user: User) => {
+                        user.books
+                          .traverse(books.getBook)
+                          .map(books => ReadingList(user, books.flatten))
+                    }
+                }
+            } yield userBooks
+        }
 
         override def addToReadingList(userId: UserId, bookId: BookId): F[Unit] = {
             for {

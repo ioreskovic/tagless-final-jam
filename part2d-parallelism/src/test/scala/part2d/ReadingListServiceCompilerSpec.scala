@@ -1,13 +1,16 @@
 package part2d
 
+import cats.Parallel
 import cats.implicits._
 import org.scalatest.{MustMatchers, WordSpec}
 import part2d.domain._
 import part2d.interpreters._
 
-import scala.util.Failure
+import scala.util.{Failure, Try}
 
 class ReadingListServiceCompilerSpec extends WordSpec with MustMatchers {
+
+    private implicit val parallelInstanceForTry: Parallel[Try, Try] = Parallel.identity[Try]
 
     val userId = UserId("1")
     private def fixture = new {

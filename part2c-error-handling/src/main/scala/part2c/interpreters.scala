@@ -19,7 +19,7 @@ object interpreters {
 
                     // Exercise - raise an error
                     // Tip: Remember that typeclasses are implicits, how do we access the MonadError.raiseError function?
-                    case None => ???
+                    case None => Throwing[F].raiseError(NoSuchUserException(userId))
                 }
             } yield list
         }
